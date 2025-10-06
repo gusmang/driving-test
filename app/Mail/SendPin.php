@@ -12,13 +12,17 @@ use Illuminate\Queue\SerializesModels;
 class SendPin extends Mailable
 {
     use Queueable, SerializesModels;
+    public $user;
+    public $pin;
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($user, $pin)
     {
         //
+        $this->user = $user;
+        $this->pin = $pin;
     }
 
     /**
@@ -37,7 +41,7 @@ class SendPin extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.verification',
+            markdown: 'mail.sendPin',
         );
     }
 
@@ -49,5 +53,15 @@ class SendPin extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    public function build()
+    {
+        return $this->subject('Send New Pin')
+            ->view('mail.sendPin')
+            ->with([
+                'user' => $this->user,
+                'pin'  => $this->pin,
+            ]);
     }
 }

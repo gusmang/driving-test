@@ -7,34 +7,47 @@ use App\Repositories\UserRepository;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
+/**
+ * @method middleware(string|array $name)
+ */
 class UserController extends Controller
 {
+
     public function __construct(protected UserService $service)
     {
-        $this->middleware('ensure.admin'); // middleware custom
+        // 2. Then, call the middleware method
+        // $this->middleware('auth:api');       // This should now work
+        // $this->middleware('ensure.admin');
     }
 
     public function index(Request $req)
     {
-        $pageIndex = $req->query('pageIndex');
-        $pageSize = $req->query('pageSize');
-        if (!$pageIndex && !$pageSize) {
-            $all = $this->service->getAllStudents();
-            $result = $all->map(fn($u) => ['id' => $u->id, 'email' => $u->email, 'profile' => []]);
-            return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => $result], 200);
-        }
+        $pageIndex = intval($req->query('pageIndex', 1)); // default 1
+        $pageSize = intval($req->query('pageSize', 10));  // default 10
+
         $pag = $this->service->getStudentsPaginated([
             'keyword' => $req->query('keyword'),
-            'pageIndex' => intval($pageIndex ?? 1),
-            'pageSize' => intval($pageSize ?? 10),
+            'pageIndex' => $pageIndex,
+            'pageSize' => $pageSize,
             'sortId' => $req->query('sortId'),
             'sortOrder' => $req->query('sortOrder')
         ]);
+
         $result = $pag->items();
+
         return response()->json([
             'status' => 'SUCCESS',
             'code' => 200,
-            'result' => array_map(fn($u) => ['id' => $u->id, 'email' => $u->email, 'profile' => []], $result),
+            'result' => array_map(fn($u) => [
+                'id' => $u->id,
+                'email' => $u->email,
+                'role' => $u->role,
+                'is_verified' => $u->is_verified,
+                'profile' => [
+                    'firstName' => $u->first_name,
+                    'lastName' => $u->last_name
+                ]
+            ], $result),
             'pagination' => [
                 'PageNumber' => $pag->currentPage(),
                 'PageSize' => $pag->perPage(),

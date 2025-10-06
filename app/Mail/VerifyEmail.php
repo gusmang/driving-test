@@ -3,22 +3,31 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\URL;
 
-class Verification extends Mailable
+class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
+
+    public $user;
+    public $url;
+    public $pin;
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($user, $pin, $url)
     {
         //
+        $this->user = $user;
+        $this->pin = $pin;
+
+        // Generate signed verification URL (valid for 24 hours)
+        $this->url = $url;
     }
 
     /**
@@ -37,7 +46,7 @@ class Verification extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.verification',
+            markdown: 'mail.verifyEmail',
         );
     }
 
@@ -49,5 +58,16 @@ class Verification extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    public function build()
+    {
+        return $this->subject('Verify Your Email')
+            ->view('mail.verifyEmail')
+            ->with([
+                'user' => $this->user,
+                'pin'  => $this->pin,
+                'verificationUrl' => $this->url
+            ]);
     }
 }

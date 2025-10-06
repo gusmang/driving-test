@@ -15,7 +15,7 @@ class UserRepository
 
     public function findByEmail(string $email): ?User
     {
-        return User::where('email', $email)->first();
+        return User::where('email', strtolower($email))->where('is_verified', true)->first();
     }
 
     public function findById(int $id): ?User
@@ -42,14 +42,23 @@ class UserRepository
 
     public function paginateStudents(array $params)
     {
-        $q = User::where('role', 'student')->whereNull('deleted_at');
+        $query = User::where('role', 'student')->whereNull('deleted_at');
+
+        // Filter keyword
         if (!empty($params['keyword'])) {
-            $k = $params['keyword'];
-            $q->where('email', 'like', "%{$k}%");
+            $keyword = $params['keyword'];
+            $query->where('email', 'like', "%{$keyword}%");
         }
+
+        // Sorting
         $sortId = $params['sortId'] ?? 'email';
         $sortOrder = $params['sortOrder'] ?? 'asc';
+        $query->orderBy($sortId, $sortOrder);
+
+        // Pagination
         $pageSize = intval($params['pageSize'] ?? 10);
-        return $q->orderBy($sortId, $sortOrder)->paginate($pageSize);
+        $page = intval($params['pageIndex'] ?? 1);
+
+        return $query->paginate($pageSize, ['*'], 'page', $page);
     }
 }

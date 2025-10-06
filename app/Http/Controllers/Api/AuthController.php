@@ -10,6 +10,7 @@ use App\Requests\LoginRequest;
 use App\Requests\ForgotRequest;
 use App\Requests\ResetRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 
 class AuthController extends Controller
 {
@@ -19,19 +20,26 @@ class AuthController extends Controller
     {
         $payload = $req->validated();
         $out = $this->service->register($payload);
+
+        if (isset($out['error'])) {
+            return response()->json([
+                'status' => 'ERROR',
+                'code' => 400,
+                'message' => $out['error']
+            ], 400);
+        }
+
         $user = $out['user'];
-        $resp = [
+        return response()->json([
             'status' => 'SUCCESS',
             'code' => 200,
             'result' => [
                 'id' => $user->id,
                 'email' => $user->email,
                 'isVerified' => $user->is_verified,
-                // untuk student, sertakan pin di response dev only (opsional)
-                'pin' => $user->role === 'student' ? ($out['pin'] ?? null) : null,
+                'pin' => $user->role === 'student' ? ($out['pin'] ?? null) : null
             ]
-        ];
-        return response()->json($resp, 200);
+        ], 200);
     }
 
     public function login(LoginRequest $req)
@@ -68,8 +76,10 @@ class AuthController extends Controller
     {
         // implement using Password broker - simplified here
         // after reset -> respond success
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => ['message' => 'password reset']]);
+        $out = $this->service->resetPassword($req->token, $req->password);
+        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => $out]);
     }
+
 
     public function me(Request $req)
     {
@@ -77,11 +87,18 @@ class AuthController extends Controller
         return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => [
             'id' => $user->id,
             'email' => $user->email,
+            'role' => $user->role,
             'profile' => [
-                'firstName' => null,
-                'lastName' => null
+                'firstName' => $user->first_name,
+                'lastName' => $user->last_name
             ]
         ]], 200);
+    }
+
+    public function verify(FacadesRequest $request, $id, $email)
+    {
+        // panggil service verify
+        return $this->service->verify($request, $id, $email);
     }
 
     public function logout(Request $req)

@@ -10,4 +10,13 @@ export default defineConfig({
         }),
         vue(),
     ],
+    // server: {
+    //     proxy: {
+    //       '/api': {
+    //         target: 'http://localhost:8004', // Laravel dev server
+    //         changeOrigin: true,
+    //         secure: false,
+    //       }
+    //     }
+    //   }
 });
