@@ -14,7 +14,14 @@ use Illuminate\Support\Facades\Request as FacadesRequest;
 
 class AuthController extends Controller
 {
-    public function __construct(protected AuthService $service) {}
+    public $success_code;
+    public $error_code;
+
+    public function __construct(protected AuthService $service)
+    {
+        $this->success_code = config('responsecode.success');
+        $this->error_code = $this->error_code;
+    }
 
     public function register(RegisterRequest $req)
     {
@@ -24,22 +31,22 @@ class AuthController extends Controller
         if (isset($out['error'])) {
             return response()->json([
                 'status' => 'ERROR',
-                'code' => 400,
+                'code' => $this->error_code,
                 'message' => $out['error']
-            ], 400);
+            ], $this->error_code);
         }
 
         $user = $out['user'];
         return response()->json([
             'status' => 'SUCCESS',
-            'code' => 200,
+            'code' => $this->success_code,
             'result' => [
                 'id' => $user->id,
                 'email' => $user->email,
                 'isVerified' => $user->is_verified,
                 'pin' => $user->role === 'student' ? ($out['pin'] ?? null) : null
             ]
-        ], 200);
+        ], $this->success_code);
     }
 
     public function login(LoginRequest $req)
@@ -53,23 +60,23 @@ class AuthController extends Controller
             }
             return response()->json([
                 'status' => 'SUCCESS',
-                'code' => 200,
+                'code' => $this->success_code,
                 'result' => [
                     'id' => $out['user']->id,
                     'email' => $out['user']->email,
                     'isVerified' => $out['user']->is_verified,
                     'access_token' => $out['token']
                 ]
-            ], 200);
+            ], $this->success_code);
         } catch (\Exception $e) {
-            return response()->json(['status' => 'FAIL', 'code' => 401, 'message' => $e->getMessage()], 401);
+            return response()->json(['status' => 'FAIL', 'code' => config('responsecode.unauthorized'), 'message' => $e->getMessage()], config('responsecode.unauthorized'));
         }
     }
 
     public function forgot(ForgotRequest $req)
     {
         $out = $this->service->forgot($req->email);
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => $out], 200);
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => $out], $this->success_code);
     }
 
     public function reset(ResetRequest $req)
@@ -77,14 +84,14 @@ class AuthController extends Controller
         // implement using Password broker - simplified here
         // after reset -> respond success
         $out = $this->service->resetPassword($req->token, $req->password);
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => $out]);
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => $out]);
     }
 
 
     public function me(Request $req)
     {
         $user = $req->user();
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => [
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => [
             'id' => $user->id,
             'email' => $user->email,
             'role' => $user->role,
@@ -92,7 +99,7 @@ class AuthController extends Controller
                 'firstName' => $user->first_name,
                 'lastName' => $user->last_name
             ]
-        ]], 200);
+        ]], $this->success_code);
     }
 
     public function verify(FacadesRequest $request, $id, $email)
@@ -104,6 +111,6 @@ class AuthController extends Controller
     public function logout(Request $req)
     {
         $this->service->logout($req->user());
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => ['message' => 'logged out']], 200);
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => ['message' => 'logged out']], $this->success_code);
     }
 }

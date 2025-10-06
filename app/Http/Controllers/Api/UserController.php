@@ -12,12 +12,13 @@ use Illuminate\Http\Request;
  */
 class UserController extends Controller
 {
+    public $success_code;
+    public $error_code;
 
     public function __construct(protected UserService $service)
     {
-        // 2. Then, call the middleware method
-        // $this->middleware('auth:api');       // This should now work
-        // $this->middleware('ensure.admin');
+        $this->success_code = config('responsecode.success');
+        $this->error_code = $this->error_code;
     }
 
     public function index(Request $req)
@@ -37,7 +38,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'SUCCESS',
-            'code' => 200,
+            'code' => $this->success_code,
             'result' => array_map(fn($u) => [
                 'id' => $u->id,
                 'email' => $u->email,
@@ -54,19 +55,19 @@ class UserController extends Controller
                 'TotalRecords' => $pag->total(),
                 'TotalPages' => $pag->lastPage()
             ]
-        ], 200);
+        ], $this->success_code);
     }
 
     public function toggle($id, Request $req)
     {
         $enable = $req->input('action') === 'enable';
         $user = $this->service->enableDisable((int)$id, $enable);
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => ['id' => $user->id, 'isActive' => $user->is_active]], 200);
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => ['id' => $user->id, 'isActive' => $user->is_active]], $this->success_code);
     }
 
     public function destroy($id)
     {
         $user = $this->service->softDelete((int)$id);
-        return response()->json(['status' => 'SUCCESS', 'code' => 200, 'result' => ['id' => $user->id]], 200);
+        return response()->json(['status' => 'SUCCESS', 'code' => $this->success_code, 'result' => ['id' => $user->id]], $this->success_code);
     }
 }

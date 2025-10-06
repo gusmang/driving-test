@@ -54,7 +54,7 @@ class AuthService
             } catch (\Exception $e) {
                 return [
                     'error' => $e->getMessage(),
-                    'messagew' => $e->getMessage()
+                    'message' => $e->getMessage()
                 ];
             }
 

@@ -11,6 +11,7 @@
 -   [Setup Database & Seeder](#setup-database--seeder)
 -   [Job Queue](#job-queue)
 -   [Vue.js SPA](#vuejs-spa)
+-   [Passport / OAuth Token](#passport--oauth-token)
 -   [Unit Testing](#unit-testing)
 -   [License](#license)
 
@@ -81,15 +82,17 @@ MAIL_MAILER=log
 
 ## Setup Database & Seeder
 
-1. **Run migrations**
+1. **Install Passport**
 
 ```bash
+composer require laravel/passport
 php artisan migrate
+php artisan passport:install
 ```
 
 2. **Create sample seeder**
 
-`database/seeders/UserSeeder.php`:
+`database/seeders/AdminUserSeeder.php`:
 
 ```php
 <?php
@@ -99,7 +102,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class UserSeeder extends Seeder
+class AdminUserSeeder extends Seeder
 {
     public function run()
     {
