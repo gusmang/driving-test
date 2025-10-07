@@ -13,6 +13,7 @@
 -   [Vue.js SPA](#vuejs-spa)
 -   [Passport / OAuth Token](#passport--oauth-token)
 -   [Unit Testing](#unit-testing)
+-   [API Documentation](#scramble)
 -   [License](#license)
 
 ---
@@ -274,13 +275,21 @@ class AuthTest extends TestCase
 }
 ```
 
-2. **Run tests**
+**Scramble Auth**
+
+```bash
+Untuk username dan password scramble bisa di cek di env.example dan bisa di akses di url /docs/api :
+DOCS_USER=goesmang
+DOCS_PASS=pass123
+```
+
+---
+
+##
 
 ```bash
 php artisan test
 ```
-
----
 
 ## License
 
