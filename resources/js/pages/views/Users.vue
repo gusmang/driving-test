@@ -51,7 +51,7 @@
             <td class="p-2 border text-center">
                 <button
                     @click="deleteUser(user.id)"
-                    class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
                 >
                     Delete
                 </button>

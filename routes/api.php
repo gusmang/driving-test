@@ -16,7 +16,7 @@ Route::prefix('auth')->group(function () {
     });
 
     Route::middleware(['auth:api'])->group(function () {
-        Route::get('usersAll', [UserController::class, 'index']);
+        Route::get('users', [UserController::class, 'index']);
         Route::patch('users/{id}/toggle', [UserController::class, 'toggle']);
         Route::delete('users/{id}', [UserController::class, 'destroy']);
     });
